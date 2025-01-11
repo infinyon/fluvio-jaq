@@ -1,0 +1,21 @@
+[package]
+name = "fluvio-jq"
+version = "0.0.0"
+authors = ["Fluvio Contributors <team@fluvio.io>"]
+description = "Fluvio SmartModule for Jq"
+edition = "2021"
+publish = false
+
+
+[lib]
+crate-type = ['cdylib', 'rlib']
+
+[dependencies]
+eyre = { version = "0.6", default-features = false }
+jaq-core = "2.0.0"
+jaq-std = "2.0.0"
+jaq-json = "1.0.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = {version = "1", features = ["preserve_order"]}
+
+fluvio-smartmodule = { version = "0.8.0" }
