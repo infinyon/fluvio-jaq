@@ -1,6 +1,6 @@
 # fluvio-jq
 
-SmartModule for processing jq.  This uses [jq](https://github.com/01mf02/jaq/tree/main/) to process JSON data.
+SmartModule for processing json record using jq syntax.  We use rust version of [jq](https://github.com/01mf02/jaq/tree/main/) to process JSON data.
 
 ## Playground
 

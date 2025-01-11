@@ -97,7 +97,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "fluvio-jq"
+name = "fluvio-jaq"
 version = "0.0.0"
 dependencies = [
  "eyre",
