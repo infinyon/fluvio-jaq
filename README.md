@@ -6,7 +6,7 @@ SmartModule for processing json record using jq syntax.  We use rust version of 
 
 You can use the [jaq playground](https://gedenkt.at/jaq/) to test Jq expression.
 
-## Usage
+## Test using SMDK
 
 To get a simple fruit:
 

@@ -2,20 +2,18 @@ name: Publish crates to crates.io
 
 on:
   workflow_dispatch:
-    inputs:
-      commit:
-        required: false
-        type: string
-        description: 'sdf git commit override (latest `main` by default)'
-        default: ''
-  
+
+
+env:
+    WASI_TARGET: wasm32-wasip1
+    FLUVIO_URL: https://hub.infinyon.cloud/install/install.sh
+    FLUVIO_CHANNEL: stable
+
+
 jobs:
   
-  publish_crates:
-    name: Publish crates to crates.io
-    strategy:
-      matrix:
-        rust: [stable]
+  build:
+    name: Build Smartmodule
     runs-on: ubuntu-latest
     steps:
       - name: Install Rust ${{ matrix.rust }} toolchain
@@ -27,9 +25,22 @@ jobs:
         with:
           ref: ${{ github.event.inputs.commit }}
 
-      - name: Run publish script
-        env:
-          VERBOSE: true
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - name: Install FVM and Fluvio
+        timeout-minutes: 10
         run: |
-          ./release-tools/publish-crates.sh
+            curl -fsS ${{ env.FLUVIO_URL }} | bash
+            echo "$HOME/.fvm/bin" >> $GITHUB_PATH
+            echo "$HOME/.fluvio/bin" >> $GITHUB_PATH
+
+      
+      - name: Build Smartmodule
+        run: make build
+
+      - name: Login to Fluvio Cloud
+        run: fluvio cloud login --email "${{ secrets.ORG_HUB_SA_NAME }}" \
+          --password "${{ secrets.ORG_HUB_SA_PASSWD_PROD }}" \
+
+      - name: Publish Smartmodule to Fluvio Cloud
+        run: |
+          smdk publish --public-yes
+  

@@ -11,9 +11,10 @@ on:
     branches: [main]
 
 env:
-    WAST_TARGET: wasm32-wasip2
+    WASI_TARGET: wasm32-wasip1
     FLUVIO_URL: https://hub.infinyon.cloud/install/install.sh
     FLUVIO_CHANNEL: stable
+    
 
 
 jobs:
@@ -31,15 +32,26 @@ jobs:
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
 
+      - name: install wasm target
+        run:  rustup target add ${{ env.WASI_TARGET }}
+
 
       - name: Setup Rust Cache
         uses: Swatinem/rust-cache@v2
         timeout-minutes: 10
 
 
+      - name: fmt
+        run: make fmt
+
       - name: Build
         timeout-minutes: 40
         run: make test
+
+      - name: Clippy
+        run: make clippy
+
+
 
 
   # Test E2E using SMDK
@@ -57,7 +69,7 @@ jobs:
 
       - name: install wasm target
         run: |
-          rustup target add ${{ env.WAST_TARGET }}
+          rustup target add ${{ env.WASI_TARGET }}
 
       - name: Setup Rust Cache
         uses: Swatinem/rust-cache@v2
@@ -69,43 +81,20 @@ jobs:
         run: |
           curl -fsS ${{ env.FLUVIO_URL }} | bash
           echo "$HOME/.fvm/bin" >> $GITHUB_PATH
+          echo "$HOME/.fluvio/bin" >> $GITHUB_PATH
 
-      - name: Build HTTP Server
+      - name: Check fluvio
+        run: |
+          fluvio version
+          smdk version
+
+      - name: Build Smartmodule
         run: make build
 
 
       - name: Run SMDK test
         run: make test
 
-
-
-      - name: Install SDF
-        run: |
-          fvm install ${{ ENV.SDF_VERSION }}
-          echo "$HOME/.fluvio/bin" >> $GITHUB_PATH
-
-      - name: Test SDF
-        run: sdf version
-
-      - name: Install Local Fluvio cluster
-        timeout-minutes: 3
-        run: fluvio cluster start
-
-      - name: Start dataflow
-        run: |
-          make -C e2e-test run-ci
-          sleep 120
-
-      - name: Test Get
-        run: |
-          make validate-df-get
-
-
-      - name: Test Post
-        run: |
-          make validate-df-post
-
-        
 
   
 
