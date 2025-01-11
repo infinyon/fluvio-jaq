@@ -2,8 +2,9 @@ use std::sync::OnceLock;
 
 use eyre::ContextCompat;
 use jaq_core::load::{Arena, File, Loader};
-use jaq_core::{load, Compiler, Ctx, Error, Filter, FilterT, Native, RcIter};
+use jaq_core::{Compiler, Ctx, Filter, Native, RcIter};
 use jaq_json::Val;
+use serde_json::Value;
 
 use fluvio_smartmodule::dataplane::smartmodule::SmartModuleInitError;
 use fluvio_smartmodule::{
@@ -13,9 +14,9 @@ use fluvio_smartmodule::{
 
 type JqFilter = Filter<Native<Val>>;
 
-static SPEC: OnceLock<JqFilter> = OnceLock::new();
+static FILTER: OnceLock<JqFilter> = OnceLock::new();
 
-const PARAM_NAME: &str = "jq";
+const PARAM_NAME: &str = "filter";
 
 #[smartmodule(init)]
 fn init(params: SmartModuleExtraParams) -> Result<()> {
@@ -42,7 +43,8 @@ fn init(params: SmartModuleExtraParams) -> Result<()> {
             .compile(modules)
             .map_err(|err| eyre::Report::msg(format!("{:#?}", err)))?;
 
-        SPEC.set(filter)
+        FILTER
+            .set(filter)
             .map_err(|_| eyre::Report::msg("jq spec is already initialized"))?;
 
         Ok(())
@@ -53,12 +55,28 @@ fn init(params: SmartModuleExtraParams) -> Result<()> {
 
 #[smartmodule(map)]
 pub fn map(record: &SmartModuleRecord) -> Result<(Option<RecordData>, RecordData)> {
-    let spec = SPEC.get().wrap_err("jolt spec is not initialized")?;
+    let filter = FILTER.get().wrap_err("jolt spec is not initialized")?;
 
     let key = record.key.clone();
-    let record = serde_json::from_slice(record.value.as_ref())?;
-   
-    todo!("implement map function using filter");
+    let json: Value = serde_json::from_slice(record.value.as_ref())?;
+    let inputs = RcIter::new(core::iter::empty());
+    let mut out = filter.run((Ctx::new([], &inputs), Val::from(json)));
+    let mut out_json: Vec<Value> = vec![];
+    loop {
+        match out.next() {
+            Some(Ok(val)) => {
+                out_json.push(val.into());
+            }
+            Some(Err(err)) => return Err(eyre::Report::msg(format!("{:#?}", err))),
+            None => {
+                break;
+            }
+        }
+    }
 
-    Ok((key, serde_json::to_vec(&transformed)?.into()))
+    if out_json.len() == 1 {
+        Ok((key, serde_json::to_vec(&out_json[0])?.into()))
+    } else {
+        Ok((key, serde_json::to_vec(&out_json)?.into()))
+    }
 }
