@@ -19,3 +19,8 @@ serde = { version = "1", features = ["derive"] }
 serde_json = {version = "1.0.81", features = ["preserve_order"]}
 
 fluvio-smartmodule = { version = "0.8.0" }
+
+
+[profile.release-lto]
+inherits = "release"
+lto = true

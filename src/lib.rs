@@ -80,3 +80,35 @@ pub fn map(record: &SmartModuleRecord) -> Result<(Option<RecordData>, RecordData
         Ok((key, serde_json::to_vec(&out_json)?.into()))
     }
 }
+
+#[cfg(test)]
+mod test {
+    use std::collections::BTreeMap;
+
+    use fluvio_smartmodule::Record;
+    use serde_json::json;
+
+    use super::*;
+
+    #[test]
+    fn test_query() {
+        let creatures = json!([
+            { "name": "Sammy", "type": "shark", "clams": 5 },
+            { "name": "Bubbles", "type": "orca", "clams": 3 },
+            { "name": "Splish", "type": "dolphin", "clams": 2 },
+            { "name": "Splash", "type": "dolphin", "clams": 2 }
+        ]);
+
+        let recorddata = RecordData::from(creatures.to_string().as_bytes());
+        let record = Record::new(recorddata);
+        let sm_record = SmartModuleRecord::new(record, 0, 100);
+
+        let mut params = BTreeMap::new();
+        params.insert("filter".to_string(), ".[] | .name".to_string());
+        init(params.into()).expect("failed");
+        let (_key, value) = map(&sm_record).expect("failed");
+
+        let out = serde_json::from_slice::<Value>(value.as_ref()).expect("failed");
+        assert_eq!(out, json!(["Sammy", "Bubbles", "Splish", "Splash"]));
+    }
+}
