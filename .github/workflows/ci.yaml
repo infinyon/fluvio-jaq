@@ -1,0 +1,135 @@
+name: main CI workflow for PR
+
+permissions: read-all
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+    WAST_TARGET: wasm32-wasip2
+    FLUVIO_URL: https://hub.infinyon.cloud/install/install.sh
+    FLUVIO_CHANNEL: stable
+
+
+jobs:
+
+  rust-test:
+    name: Test Smartmodule using Rust
+    runs-on: ubuntu-latest
+
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+
+      - name: Setup Rust Cache
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 10
+
+
+      - name: Build
+        timeout-minutes: 40
+        run: make test
+
+
+  # Test E2E using SMDK
+  smdk-test:
+    name: E2E Test
+    runs-on: ubuntu-latest
+      
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install wasm target
+        run: |
+          rustup target add ${{ env.WAST_TARGET }}
+
+      - name: Setup Rust Cache
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 10
+
+
+      - name: Install FVM and Fluvio
+        timeout-minutes: 10
+        run: |
+          curl -fsS ${{ env.FLUVIO_URL }} | bash
+          echo "$HOME/.fvm/bin" >> $GITHUB_PATH
+
+      - name: Build HTTP Server
+        run: make build
+
+
+      - name: Run SMDK test
+        run: make test
+
+
+
+      - name: Install SDF
+        run: |
+          fvm install ${{ ENV.SDF_VERSION }}
+          echo "$HOME/.fluvio/bin" >> $GITHUB_PATH
+
+      - name: Test SDF
+        run: sdf version
+
+      - name: Install Local Fluvio cluster
+        timeout-minutes: 3
+        run: fluvio cluster start
+
+      - name: Start dataflow
+        run: |
+          make -C e2e-test run-ci
+          sleep 120
+
+      - name: Test Get
+        run: |
+          make validate-df-get
+
+
+      - name: Test Post
+        run: |
+          make validate-df-post
+
+        
+
+  
+
+  # To satisfy the merge queue check       
+  done:
+    name: Done
+    needs:
+      - rust-test
+      - smdk-test
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+    - name: Dump needs context
+      env:
+        CONTEXT: ${{ toJson(needs) }}
+      run: |
+        echo -e "\033[33;1;4mDump context\033[0m"
+        echo -e "$CONTEXT\n"
+    - name: Report failure on cancellation
+      if: ${{ contains(needs.*.result, 'cancelled') || cancelled() }}
+      run: exit 1
+    - name: Failing test and build
+      if: ${{ contains(needs.*.result, 'failure') }}
+      run: exit 1
+    - name: Successful test and build
+      if: ${{ !(contains(needs.*.result, 'failure')) }}
+      run: exit 0

@@ -1,0 +1,61 @@
+name: Merge Queue Build Check
+run-name: Merge Group check - ${{ github.event.merge_group.head_commit.message }}
+
+# check enable the merge queue
+
+permissions: read-all
+
+concurrency:
+  group: build-all-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  # uncomment for testing
+  # pull_request:
+  #  branches: [main]
+  merge_group:
+
+
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+
+      - name: Dummy
+        timeout-minutes: 40
+        run: |
+          echo "Hello world, this is a dummy build"
+
+
+
+  # To satisfy the merge queue check
+  done:
+    name: Done
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+    - name: Dump needs context
+      env:
+        CONTEXT: ${{ toJson(needs) }}
+      run: |
+        echo -e "\033[33;1;4mDump context\033[0m"
+        echo -e "$CONTEXT\n"
+    - name: Report failure on cancellation
+      if: ${{ contains(needs.*.result, 'cancelled') || cancelled() }}
+      run: exit 1
+    - name: Failing test and build
+      if: ${{ contains(needs.*.result, 'failure') }}
+      run: exit 1
+    - name: Successful test and build
+      if: ${{ !(contains(needs.*.result, 'failure')) }}
+      run: exit 0

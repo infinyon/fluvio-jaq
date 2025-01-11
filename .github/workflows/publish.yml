@@ -1,0 +1,35 @@
+name: Publish crates to crates.io
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        required: false
+        type: string
+        description: 'sdf git commit override (latest `main` by default)'
+        default: ''
+  
+jobs:
+  
+  publish_crates:
+    name: Publish crates to crates.io
+    strategy:
+      matrix:
+        rust: [stable]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Rust ${{ matrix.rust }} toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.commit }}
+
+      - name: Run publish script
+        env:
+          VERBOSE: true
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          ./release-tools/publish-crates.sh
