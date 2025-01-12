@@ -1,0 +1,15 @@
+apiVersion: 0.1.0
+meta:
+  version: 0.3.8
+  name: cat-facts-transformed
+  type: http-source
+  topic: cat-facts
+
+http:
+  endpoint: https://catfact.ninja/fact
+  interval: 10s
+
+transforms:
+  - uses: infinyon/jaq@0.1.0
+    with:
+      filter: ".fact"

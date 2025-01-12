@@ -2,11 +2,46 @@
 
 SmartModule for processing json record using jq syntax.  We use rust version of [jq](https://github.com/01mf02/jaq/tree/main/) to process JSON data.
 
+
 ## Playground
 
 You can use the [jaq playground](https://gedenkt.at/jaq/) to test Jq expression.
 
-## Test using SMDK
+
+## To Install
+
+```bash
+fluvio hub smartmodule download  infinyon/jaq@0.1.0
+```
+
+## Example of usage in Connector
+
+download connector:
+```
+cdk hub download infinyon/http-source@0.3.8
+```
+
+Have connector.yaml file like this `cat.yaml`
+```
+apiVersion: 0.1.0
+meta:
+  version: 0.3.8
+  name: cat-facts-transformed
+  type: http-source
+  topic: cat-facts-data-transform
+
+http:
+  endpoint: https://catfact.ninja/fact
+  interval: 10s
+
+transforms:
+  - uses: infinyon/jaq@0.1.0
+    with:
+      filter: ".fact"
+```
+
+
+## For Developer
 
 To get a simple fruit:
 
