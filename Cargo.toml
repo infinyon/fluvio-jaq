@@ -1,5 +1,5 @@
 [package]
-name = "fluvio-jaq"
+name = "jaq"
 version = "0.0.0"
 authors = ["Fluvio Contributors <team@fluvio.io>"]
 description = "Fluvio SmartModule processing using Jaq"
