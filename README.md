@@ -282,7 +282,7 @@ fluvio cloud connector create --config quotes.yaml
 Or use `cdk` to deploy locally.
 
 
-## For Developer
+## For Developers
 
 Compile and test the smartmodule using the `smdk` tool.
 
