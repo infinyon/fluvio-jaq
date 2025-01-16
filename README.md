@@ -9,9 +9,9 @@ Use the [jaq playground](https://gedenkt.at/jaq/) to test Jq expressions before 
 
 ## Download and use Smartmodule
 
-Download the smartmdule from Infinyon's Hub, and apply it to a topic.
+Download a pre-compiled version of this SmartModule from the InfinyOn Hub, create a topic, and to run the tests.
 
-Download smartmoddule from Hub to the Cluster
+Download the SmartModule:
 
 ```bash
 fluvio hub smartmodule download infinyon/jaq@0.1.0
@@ -22,6 +22,8 @@ Create a topic called `jaq`:
 ```bash
 fluvio topic create jaq
 ```
+
+Run the tests:
 
 ### Test - Array 1
 
