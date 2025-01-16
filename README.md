@@ -1,6 +1,6 @@
 # JQuery SmartModule (jaq)
 
-SmartModule for processing json record using jq syntax. The smartmodule is based on the rust version of jq named [jaq](https://github.com/01mf02/jaq/tree/main/).
+SmartModule for processing json records using jq syntax. The smartmodule is based on the rust version of jq named [jaq](https://github.com/01mf02/jaq/tree/main/).
 
 ## Playground
 
