@@ -296,18 +296,22 @@ smdk build
 
 ### Test SmaartModule
 
-Use [test-data/fruit-input.json](test-data/fruit-input.json) test dataset.
-
-To get a simple fruit:
+Use [test-data/fruit-input.json](test-data/fruit-input.json) to test simple lookup:
 
 ```bash
-$ smdk test --file test-data/fruit-input.json --raw -e filter=.fruit
+smdk test --file test-data/fruit-input.json --raw -e filter=.fruit
+```
+
+```bash
 {"name":"apple","color":"green","price":1.2}
 ```
 
-With pipeline:
+Use [test-data/creatures-input.json](test-data/creatures-input.json) to test array lookup:
 
 ```bash
-$ smdk test --file test-data/creatures-input.json --raw -e filter=".[] | .name"
+smdk test --file test-data/creatures-input.json --raw -e filter=".[] | .name"
+```
+
+```bash
 ["Sammy","Bubbles","Splish","Splash"]
 ```
