@@ -294,7 +294,7 @@ Compile the smartmodule:
 smdk build
 ```
 
-### Test SmaartModule
+### Test SmartModule
 
 #### 1. Use [test-data/fruit-input.json](test-data/fruit-input.json) to test simple lookup:
 
