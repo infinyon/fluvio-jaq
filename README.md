@@ -7,7 +7,7 @@ SmartModule for processing json record using jq syntax. The smartmodule is based
 Use the [jaq playground](https://gedenkt.at/jaq/) to test Jq expressions before using them in a SmartModule.
 
 
-## Download and use Smartmodule
+## Download and Test the SmartModule
 
 Download a pre-compiled version of this SmartModule from the InfinyOn Hub, create a topic, and to run the tests.
 
