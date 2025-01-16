@@ -243,7 +243,7 @@ Map from one object to another.
   ]
   ```
 
-## Example of usage in Connector
+## Use SmartModule in a Connector
 
 Smartmodule can be used in a connector.
 
