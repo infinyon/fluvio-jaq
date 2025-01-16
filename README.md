@@ -11,8 +11,6 @@ Use the [jaq playground](https://gedenkt.at/jaq/) to test Jq expressions before 
 
 Download a pre-compiled version of this SmartModule from the InfinyOn Hub, create a topic, and to run the tests.
 
-Download the SmartModule:
-
 ```bash
 fluvio hub smartmodule download infinyon/jaq@0.1.0
 ```
